@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -18,7 +17,7 @@ import org.jspecify.annotations.Nullable;
  * <pre>{@code
  * CardSightConfig config = CardSightConfig.builder()
  *     .apiKey("your-api-key")
- *     .timeout(30, TimeUnit.SECONDS)
+ *     .timeout(Duration.ofSeconds(30))
  *     .addHeader("Custom-Header", "value")
  *     .build();
  * }</pre>
@@ -128,18 +127,6 @@ public final class CardSightConfig {
          */
         public Builder timeout(Duration duration) {
             this.timeout = duration;
-            return this;
-        }
-
-        /**
-         * Sets the timeout duration for API calls.
-         *
-         * @param timeout the timeout value
-         * @param unit the time unit
-         * @return this builder
-         */
-        public Builder timeout(long timeout, TimeUnit unit) {
-            this.timeout = Duration.ofMillis(unit.toMillis(timeout));
             return this;
         }
 

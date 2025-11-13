@@ -7,8 +7,8 @@ import ai.cardsight.generated.client.ApiClient;
 import ai.cardsight.generated.client.Configuration;
 import jakarta.inject.Inject;
 import okhttp3.OkHttpClient;
+import java.time.Duration;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Main client for the CardSight AI SDK.
@@ -329,8 +329,8 @@ public class CardSightAI {
          * @param unit the time unit
          * @return this builder
          */
-        public Builder timeout(long timeout, TimeUnit unit) {
-            configBuilder.timeout(timeout, unit);
+        public Builder timeout(Duration duration) {
+            configBuilder.timeout(duration);
             return this;
         }
 
