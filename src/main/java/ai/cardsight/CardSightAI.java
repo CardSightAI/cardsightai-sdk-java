@@ -325,8 +325,7 @@ public class CardSightAI {
         /**
          * Sets the timeout duration for API calls.
          *
-         * @param timeout the timeout value
-         * @param unit the time unit
+         * @param duration the timeout value
          * @return this builder
          */
         public Builder timeout(Duration duration) {
