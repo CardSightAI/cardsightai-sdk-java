@@ -55,44 +55,35 @@ public class CardSightErrorInterceptor implements Interceptor {
         }
 
         // Convert to appropriate exception based on status code
-        CardSightException exception;
-        switch (response.code()) {
-            case 401:
-                exception = new AuthenticationException(
+        CardSightException exception = switch(response.code()) {
+            case 401 -> new AuthenticationException(
                     "Authentication failed. Please check your API key.",
                     errorCode,
                     requestId,
                     null
                 );
-                break;
-            case 400:
-                exception = new CardSightException(
+            case 400 -> new CardSightException(
                     "Invalid request: " + errorMessage,
                     errorCode,
                     requestId,
                     400,
                     null
                 );
-                break;
-            case 404:
-                exception = new CardSightException(
+            case 404 -> new CardSightException(
                     "Resource not found: " + errorMessage,
                     errorCode,
                     requestId,
                     404,
                     null
                 );
-                break;
-            case 408:
-                exception = new CardSightException(
+            case 408 -> new CardSightException(
                     "Request timed out. The operation may be too complex or the service is busy.",
                     errorCode,
                     requestId,
                     408,
                     null
                 );
-                break;
-            case 429:
+            case 429 ->
                 exception = new CardSightException(
                     "Rate limit exceeded. Please wait before making more requests.",
                     errorCode,
@@ -100,20 +91,14 @@ public class CardSightErrorInterceptor implements Interceptor {
                     429,
                     null
                 );
-                break;
-            case 500:
-            case 502:
-            case 503:
-            case 504:
-                exception = new CardSightException(
+            case 500, 502, 503, 504 -> new CardSightException(
                     "Server error. The service may be temporarily unavailable.",
                     errorCode,
                     requestId,
                     response.code(),
                     null
                 );
-                break;
-            default:
+            default ->
                 exception = new CardSightException(
                     errorMessage,
                     errorCode,
@@ -121,8 +106,7 @@ public class CardSightErrorInterceptor implements Interceptor {
                     response.code(),
                     null
                 );
-        }
-
+       };
         // Note: We can't throw the exception directly from the interceptor
         // Instead, we need to handle this at the ApiClient level
         // For now, we'll just return the response and let the generated code handle it
