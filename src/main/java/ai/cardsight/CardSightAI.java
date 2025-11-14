@@ -7,9 +7,8 @@ import ai.cardsight.generated.client.ApiClient;
 import ai.cardsight.generated.client.Configuration;
 import jakarta.inject.Inject;
 import okhttp3.OkHttpClient;
-
+import java.time.Duration;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Main client for the CardSight AI SDK.
@@ -60,8 +59,7 @@ public class CardSightAI {
      * @param apiKey the API key for authentication
      * @throws NullPointerException if apiKey is null
      */
-    @Inject
-    public CardSightAI(@ApiKey String apiKey) {
+    public CardSightAI(String apiKey) {
         this(CardSightConfig.builder()
                 .apiKey(apiKey)
                 .build());
@@ -116,11 +114,10 @@ public class CardSightAI {
 
         // Set timeout if configured
         if (config.getTimeout() != null) {
-            long timeoutMillis = config.getTimeout().toMillis();
             httpClientBuilder
-                .connectTimeout(timeoutMillis, TimeUnit.MILLISECONDS)
-                .readTimeout(timeoutMillis, TimeUnit.MILLISECONDS)
-                .writeTimeout(timeoutMillis, TimeUnit.MILLISECONDS);
+                .connectTimeout(config.getTimeout())
+                .readTimeout(config.getTimeout())
+                .writeTimeout(config.getTimeout());
         }
 
         OkHttpClient httpClient = httpClientBuilder.build();
@@ -328,12 +325,11 @@ public class CardSightAI {
         /**
          * Sets the timeout duration for API calls.
          *
-         * @param timeout the timeout value
-         * @param unit the time unit
+         * @param duration the timeout value
          * @return this builder
          */
-        public Builder timeout(long timeout, TimeUnit unit) {
-            configBuilder.timeout(timeout, unit);
+        public Builder timeout(Duration duration) {
+            configBuilder.timeout(duration);
             return this;
         }
 

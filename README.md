@@ -94,12 +94,7 @@ import jakarta.inject.Inject;
 public class MyService {
     private final CardSightAI client;
 
-    @Inject
-    public MyService(@ApiKey String apiKey) {
-        this.client = new CardSightAI(apiKey);
-    }
-
-    // Or inject the client directly if configured in your DI container
+    // Inject the client directly if configured in your DI container
     @Inject
     public MyService(CardSightAI client) {
         this.client = client;
@@ -131,7 +126,7 @@ Use the builder for advanced configuration:
 CardSightAI client = CardSightAI.builder()
     .apiKey("your-api-key")
     .baseUrl("https://api.cardsight.ai")
-    .timeout(30, TimeUnit.SECONDS)
+    .timeout(Duration.ofSeconds(30))
     .addHeader("Custom-Header", "value")
     .build();
 ```

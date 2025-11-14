@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Configuration for the CardSight AI client.
@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
  * <pre>{@code
  * CardSightConfig config = CardSightConfig.builder()
  *     .apiKey("your-api-key")
- *     .timeout(30, TimeUnit.SECONDS)
+ *     .timeout(Duration.ofSeconds(30))
  *     .addHeader("Custom-Header", "value")
  *     .build();
  * }</pre>
@@ -27,17 +27,15 @@ import java.util.concurrent.TimeUnit;
 public final class CardSightConfig {
 
     private final String apiKey;
-    private final String baseUrl;
-    private final Duration timeout;
+    @Nullable private final String baseUrl;
+    @Nullable private final Duration timeout;
     private final Map<String, String> headers;
 
     private CardSightConfig(Builder builder) {
         this.apiKey = Objects.requireNonNull(builder.apiKey, "API key cannot be null");
         this.baseUrl = builder.baseUrl;
         this.timeout = builder.timeout;
-        this.headers = builder.headers.isEmpty()
-            ? Collections.emptyMap()
-            : Collections.unmodifiableMap(new HashMap<>(builder.headers));
+        this.headers = Collections.unmodifiableMap(builder.headers);
     }
 
     /**
@@ -54,7 +52,7 @@ public final class CardSightConfig {
      *
      * @return the base URL, or null to use the default
      */
-    public String getBaseUrl() {
+    public @Nullable String getBaseUrl() {
         return baseUrl;
     }
 
@@ -63,7 +61,7 @@ public final class CardSightConfig {
      *
      * @return the timeout duration, or null for default
      */
-    public Duration getTimeout() {
+    public @Nullable Duration getTimeout() {
         return timeout;
     }
 
@@ -90,8 +88,8 @@ public final class CardSightConfig {
      */
     public static final class Builder {
         private String apiKey;
-        private String baseUrl;
-        private Duration timeout;
+        @Nullable private String baseUrl;
+        @Nullable private Duration timeout;
         private final Map<String, String> headers = new HashMap<>();
 
         private Builder() {
@@ -129,18 +127,6 @@ public final class CardSightConfig {
          */
         public Builder timeout(Duration duration) {
             this.timeout = duration;
-            return this;
-        }
-
-        /**
-         * Sets the timeout duration for API calls.
-         *
-         * @param timeout the timeout value
-         * @param unit the time unit
-         * @return this builder
-         */
-        public Builder timeout(long timeout, TimeUnit unit) {
-            this.timeout = Duration.ofMillis(unit.toMillis(timeout));
             return this;
         }
 
