@@ -8,7 +8,7 @@
 
     <groupId>ai.cardsight</groupId>
     <artifactId>cardsightai-sdk-java</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>1.0.2</version>
     <packaging>jar</packaging>
 
     <name>CardSight AI Java SDK</name>
@@ -34,7 +34,7 @@
 
     <scm>
         <connection>scm:git:git://github.com/CardSightAI/cardsightai-sdk-java.git</connection>
-        <developerConnection>scm:git:ssh://github.com:CardSightAI/cardsightai-sdk-java.git</developerConnection>
+        <developerConnection>scm:git:git@github.com:CardSightAI/cardsightai-sdk-java.git</developerConnection>
         <url>https://github.com/CardSightAI/cardsightai-sdk-java</url>
     </scm>
 
@@ -335,6 +335,19 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- Central Publishing Maven Plugin -->
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.6.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <publishingServerId>central</publishingServerId>
+                    <autoPublish>false</autoPublish>
+                    <waitUntil>validated</waitUntil>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -360,6 +373,36 @@
                                     <outputDirectory>${project.basedir}/src/main/resources</outputDirectory>
                                     <outputFileName>openapi.json</outputFileName>
                                     <overwrite>true</overwrite>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Profile for releasing to Maven Central -->
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <!-- GPG Plugin for signing artifacts -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.2.8</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                <configuration>
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
                                 </configuration>
                             </execution>
                         </executions>
