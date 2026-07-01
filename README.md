@@ -29,14 +29,14 @@ Add this dependency to your `pom.xml`:
 <dependency>
     <groupId>ai.cardsight</groupId>
     <artifactId>cardsightai-sdk-java</artifactId>
-    <version>0.1.0</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```gradle
-implementation 'ai.cardsight:cardsightai-sdk-java:0.1.0'
+implementation 'ai.cardsight:cardsightai-sdk-java:2.0.0'
 ```
 
 ## Quick Start
@@ -355,7 +355,7 @@ This SDK uses a **simplified architecture** that directly exposes the auto-gener
 1. **Zero maintenance overhead** - No manual wrapper methods to update
 2. **Automatic API updates** - New endpoints are immediately available
 3. **Full type safety** - All parameters and responses are strongly typed
-4. **Complete API coverage** - Access to all 68+ endpoints without manual coding
+4. **Complete API coverage** - Access to all 78+ endpoints without manual coding
 
 ### Direct API Access
 
@@ -365,12 +365,18 @@ The SDK exposes the generated API classes directly:
 CardSightAI client = new CardSightAI("api-key");
 
 // Each API category is directly accessible
-client.catalog()      // CatalogApi - 20+ methods
-client.collections()  // CollectionManagementApi - 15+ methods
-client.lists()       // ListsApi - 8+ methods
-client.ai()          // AiApi - natural language search
-client.grading()     // GradesApi - grading information
-client.health()      // HealthApi - status checks
+client.catalog()         // CatalogApi - browse/search cards, releases, sets, fields, parallels
+client.collections()     // CollectionManagementApi - manage collections
+client.lists()           // ListsApi - want lists
+client.ai()              // AiApi - natural language search
+client.grading()         // GradesApi - grading information
+client.health()          // HealthApi - status checks
+client.cardIdentification() // CardIdentificationApi - identify cards from images
+client.detection()       // CardDetectionApi - locate cards within an image
+client.marketplace()     // MarketplaceApi - marketplace listings and sales data
+client.population()      // PopulationApi - graded card population reports
+client.pricing()         // PricingApi - card pricing, search, and bulk pricing
+client.releaseCalendar() // ReleaseCalendarApi - upcoming and recent releases
 // ... and more
 ```
 

@@ -273,6 +273,51 @@ public class CardSightAI {
   }
 
   /**
+   * Gets the Card Detection API for locating cards within an image.
+   *
+   * @return the Card Detection API instance
+   */
+  public CardDetectionApi detection() {
+    return new CardDetectionApi(apiClient);
+  }
+
+  /**
+   * Gets the Marketplace API for marketplace listings and sales data.
+   *
+   * @return the Marketplace API instance
+   */
+  public MarketplaceApi marketplace() {
+    return new MarketplaceApi(apiClient);
+  }
+
+  /**
+   * Gets the Population API for graded card population reports.
+   *
+   * @return the Population API instance
+   */
+  public PopulationApi population() {
+    return new PopulationApi(apiClient);
+  }
+
+  /**
+   * Gets the Pricing API for card pricing data.
+   *
+   * @return the Pricing API instance
+   */
+  public PricingApi pricing() {
+    return new PricingApi(apiClient);
+  }
+
+  /**
+   * Gets the Release Calendar API for upcoming and recent release schedules.
+   *
+   * @return the Release Calendar API instance
+   */
+  public ReleaseCalendarApi releaseCalendar() {
+    return new ReleaseCalendarApi(apiClient);
+  }
+
+  /**
    * Gets the underlying API client for advanced usage.
    *
    * @return the API client

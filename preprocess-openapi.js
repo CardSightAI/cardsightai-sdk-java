@@ -48,7 +48,25 @@ try {
 }
 
 /**
- * Recursively remove $schema and $id properties from an object
+ * Returns true if a schema node describes a boolean type, including the
+ * JSON Schema nullable form `"type": ["boolean", "null"]`.
+ */
+function isBooleanSchema(obj) {
+  return (
+    obj.type === 'boolean' ||
+    (Array.isArray(obj.type) && obj.type.includes('boolean'))
+  );
+}
+
+/**
+ * Recursively remove JSON Schema keywords that OpenAPI Generator cannot handle:
+ *
+ *   - `$schema` / `$id` (JSON Schema 2020-12 meta-properties) break parsing
+ *     when embedded in component schemas.
+ *   - `const` / single-value `enum` on a BOOLEAN property makes the generator
+ *     emit an uncompilable single-value enum (e.g. `TRUE("true")` assigned to a
+ *     `Boolean` field). Stripping it generates a plain `Boolean` field instead;
+ *     the constraint is still enforced server-side.
  */
 function removeMetaProperties(obj) {
   if (typeof obj !== 'object' || obj === null) {
@@ -61,6 +79,16 @@ function removeMetaProperties(obj) {
   }
   if (obj.hasOwnProperty('$id')) {
     delete obj.$id;
+  }
+
+  // Drop const / single-value enum on boolean schemas (generator bug)
+  if (isBooleanSchema(obj)) {
+    if (obj.hasOwnProperty('const')) {
+      delete obj.const;
+    }
+    if (Array.isArray(obj.enum)) {
+      delete obj.enum;
+    }
   }
 
   // Recursively process all properties
