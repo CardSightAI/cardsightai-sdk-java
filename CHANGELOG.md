@@ -5,6 +5,32 @@ All notable changes to the CardSight AI Java SDK will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-06-30
+
+Regenerated from the latest CardSight AI OpenAPI specification (now 78 paths / 346 schemas, up from 61 / 236).
+
+### Added
+
+- **Five new API categories**, each exposed via a typed accessor on `CardSightAI`:
+  - Card Detection — `client.detection()` — locate cards within an image
+  - Marketplace — `client.marketplace()` — marketplace listings and sales data
+  - Population — `client.population()` — graded card population reports (by card, set, release)
+  - Pricing — `client.pricing()` — card pricing, pricing search, and bulk pricing
+  - Release Calendar — `client.releaseCalendar()` — upcoming and recent release schedules
+- **17 new endpoints**, including catalog search (`/v1/catalog/search`), catalog fields and parallels, segment-scoped identification (`/v1/identify/card/{segment}`), set-identifiability checks, and the marketplace/pricing/population/release-calendar endpoints above.
+- **110+ new model classes** covering the new request/response types.
+
+### Changed
+
+- OpenAPI preprocessing now strips `const` / single-value `enum` from boolean schema properties (e.g. the new `isPartial` field). OpenAPI Generator 7.17.0 otherwise renders these as an uncompilable single-value enum.
+- The `-Pdownload-spec` profile now bypasses the download cache and runs in the `validate` phase (before preprocessing), so refreshing the spec reliably picks up server-side API changes. Previously it served a stale cached spec.
+
+### Removed
+
+- **BREAKING:** `CollectionAnalyticsResponse.performance` and its supporting models (`CollectionPerformance`, `TopGainerCard`, `TopValueCard`, `MostValuableGroup`, `BestPerformingGroup`, `AIIdentification`). The collection analytics endpoint no longer returns a performance breakdown — code calling `analytics.getPerformance()` must be updated.
+
+[2.0.0]: https://github.com/CardSightAI/cardsightai-sdk-java/releases/tag/v2.0.0
+
 ## [1.0.0] - 2025-01-11
 
 ### Added

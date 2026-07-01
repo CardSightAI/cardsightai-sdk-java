@@ -52,3 +52,7 @@ buildNumber.properties
 # Test output
 /test-output/
 /test-results/
+
+.claude/
+CLAUDE.md
+PUBLISHING.md

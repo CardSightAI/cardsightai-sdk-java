@@ -8,7 +8,7 @@
 
     <groupId>ai.cardsight</groupId>
     <artifactId>cardsightai-sdk-java</artifactId>
-    <version>1.0.2</version>
+    <version>2.0.0</version>
     <packaging>jar</packaging>
 
     <name>CardSight AI Java SDK</name>
@@ -364,7 +364,9 @@
                         <executions>
                             <execution>
                                 <id>download-openapi-spec</id>
-                                <phase>initialize</phase>
+                                <!-- Runs in 'validate' (before the 'initialize' preprocess step) so the
+                                     freshly downloaded spec is the one that gets preprocessed and generated. -->
+                                <phase>validate</phase>
                                 <goals>
                                     <goal>wget</goal>
                                 </goals>
@@ -373,6 +375,9 @@
                                     <outputDirectory>${project.basedir}/src/main/resources</outputDirectory>
                                     <outputFileName>openapi.json</outputFileName>
                                     <overwrite>true</overwrite>
+                                    <!-- Bypass the plugin's on-disk cache; otherwise stale specs are
+                                         served and server-side API changes are never picked up. -->
+                                    <skipCache>true</skipCache>
                                 </configuration>
                             </execution>
                         </executions>
