@@ -5,6 +5,17 @@ All notable changes to the CardSight AI Java SDK will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-07-15
+
+### Added
+- **Pricing history paging** — `as_of_date` query param on `GET /v1/pricing/{card_id}` (500-row cap; advisory `messages`).
+- **Catalog `/N` slash search** — `SearchResult` gains `numberedTo`.
+- **Server advisory messages** — `ServerMessage[]` `messages` arrays on `PaginatedCardsResponse`, `CatalogSearchResponse`, and `PricingResponse`.
+
+### Changed
+- Regenerated from the latest OpenAPI spec; parallel catalog endpoints now marked free.
+- `BulkPricingRequest.limit` documented maximum reduced from 500 to 100.
+
 ## [2.0.0] - 2026-06-30
 
 Regenerated from the latest CardSight AI OpenAPI specification (now 78 paths / 346 schemas, up from 61 / 236).
