@@ -5,6 +5,30 @@ All notable changes to the CardSight AI Java SDK will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2026-09-11
+
+Regenerated from the latest CardSight AI OpenAPI specification (now 79 paths / 364 schemas, up from 78 / 346). No new API tags — every endpoint is reachable through an existing typed accessor on `CardSightAI`.
+
+### Breaking
+
+- **`CardDetails.parallel` removed, replaced by `parallelSuggestions`.** Card detail responses no longer return a single guessed parallel; they return a ranked array of `ParallelSuggestion` (best match first), each with an optional `confidence` (`High` | `Medium` | `Low` — absent means not assessed, not "Low").
+  - Migration: replace `cardDetails.getParallel()` with `cardDetails.getParallelSuggestions().get(0)` (guard for an empty/null list), and read `ParallelSuggestion.getName()` / `getId()` / `getDescription()` / `getIsPartial()` / `getNumberedTo()` / `getCards()` / `getConfidence()` in place of the old single object's fields.
+  - `PricingCardContext.getParallel()` is **unaffected** — pricing context still reports a single resolved parallel and keeps its existing shape.
+
+### Added
+
+- **New endpoint:** `GET /v1/pricing/{card_id}/timeseries` — historical pricing candles, exposed via the existing `client.pricing()` accessor as `PricingApi.getCardPricingTimeseries(interval, cardId, periods, asOfDate, listingType, parallelId, gradeId)`. `interval` (`daily` | `weekly` | `monthly`) is required; `periods`, `asOfDate`, `listingType`, `parallelId`, and `gradeId` are optional. Returns a `TimeseriesResponse` backed by new `CandlePeriod`, `CandleStats`, `RawTimeseriesSection`, `TimeseriesCompanyGroup`, `TimeseriesGradeGroup`, `TimeseriesTypeTotals`, and `TimeseriesQueryEcho` models (plus their `*Input` counterparts).
+- `CardSuggestion` now carries full card fields (year, manufacturer, releaseName, setName, name, number, description, etc.), populated when card-detection confidence is `Medium` or `Low`.
+- `FeedbackResponse.status` gained new values: `new`, `confirmed_bug`, `enhancement_backlog`, `enhancement_planned`, `released`, `not_an_issue`, `closed` (existing values are unchanged; several older values are now documented as deprecated).
+- `SearchResult` gained optional `segmentName`, `cardNumber`, and `matchKind` (`exact` | `fuzzy`).
+- Card detections may now include `CARD_LANGUAGE` in `card.fields`.
+- New documented `409`, `408`, and `503` error responses on several endpoints.
+
+### Changed
+
+- Title search `q` minimum length is now 2 characters (previously allowed shorter queries).
+- Parallel catalog endpoints are no longer labelled free-tier.
+
 ## [2.1.0] - 2026-07-15
 
 ### Added
