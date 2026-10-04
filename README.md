@@ -6,8 +6,8 @@
 
 **Official Java SDK for [CardSight AI](https://cardsight.ai) REST API**
 
-The most comprehensive trading card identification and collection management platform.
-**12M+ Cards** • **AI-Powered Recognition** • **Free Tier Available**
+The most comprehensive trading card identification and collection management platform, covering **sports cards** (Baseball, Football, Basketball, Hockey, Soccer, MMA) and **trading card games** (Pokémon, Magic: The Gathering, One Piece).
+**15M+ Trading Cards** • **8,250+ Identifiable Sets** • **AI-Powered Recognition** • **CardMagic Listing Images** • **Free Tier Available**
 
 **Quick Links:** [Why CardSight AI?](#why-cardsight-ai) • [Getting Started](#getting-started) • [Installation](#installation) • [Examples](#usage-examples) • [API Documentation](https://api.cardsight.ai/documentation) • [Support](#support)
 
@@ -17,8 +17,8 @@ The most comprehensive trading card identification and collection management pla
 
 Building a trading card app means solving two hard problems before you can ship a single feature: **recognizing cards from a photo** and **maintaining an accurate catalog of every card ever printed**. CardSight AI does both, so you can build your product instead of a computer-vision pipeline and a data-entry team.
 
-- **One photo, full identification.** A single AI scan identifies multiple cards at once — including the exact parallel/variant, the print run for numbered cards, and the grade on a slabbed card. Point a camera at a card and get structured data back.
-- **A catalog that spans the whole hobby.** 12M+ cards across sports (baseball, football, basketball, and more) *and* trading card games (Pokémon, Magic: The Gathering, Yu-Gi-Oh!, and beyond) — one API instead of stitching together a different data source per category.
+- **One photo, full identification.** A single AI scan identifies multiple cards at once — including ranked parallel/variant candidates (beta), the print run for numbered cards, and the grade on a slabbed card. Point a camera at a card and get structured data back.
+- **A catalog that spans the whole hobby.** 15M+ cards across sports (Baseball, Football, Basketball, Hockey, Soccer, MMA) *and* trading card games (Pokémon, Magic: The Gathering, One Piece) — one API instead of stitching together a different data source per category.
 - **Real market data, built in.** Completed-sale pricing, active marketplace listings, and graded population reports power "what's it worth", portfolio tracking, and deal-finding features without integrating a second vendor.
 - **Collection management out of the box.** Collections, binders, want lists, and analytics are first-class endpoints — skip building your own card database and CRUD layer.
 - **One integration works across every game.** Flexible metadata (HP, Rarity, Artist, Mana Cost, …) is exposed uniformly through the Fields system, so supporting a new game doesn't mean new code.
@@ -33,6 +33,9 @@ Building a trading card app means solving two hard problems before you can ship 
 - **Auto-Generated from OpenAPI** - Always up-to-date with the latest API; every endpoint is available with zero manual wrapper code
 - **Full Type Safety** - Strongly typed request parameters and response models for every endpoint
 - **Multi-Card Detection** - Identify multiple cards in a single image with per-detection confidence levels
+- **Sports Cards & TCGs** - Identification and catalog data for Baseball, Football, Basketball, Hockey, Soccer, and MMA, plus Pokémon, Magic: The Gathering, and One Piece
+- **CardMagic** - Turn a phone photo into clean, listing-ready card images. No scanner or custom hardware required
+- **Parallel Identification (beta)** - Ranked parallel variant candidates with per-entry confidence tiers, launched for baseball
 - **Flexible Metadata via Fields** - Search and surface arbitrary card properties (HP, Rarity, Artist, Mana Cost, etc.) across any trading card game
 - **Dependency Injection Ready** - Built-in Jakarta Inject (JSR-330) annotations for Spring, CDI, and Guice
 - **Robust HTTP Stack** - Built on OkHttp with Gson serialization, connection pooling, and configurable timeouts
@@ -44,21 +47,21 @@ Building a trading card app means solving two hard problems before you can ship 
 |---------|-------------|-----------------|
 | **Card Identification** | Identify multiple cards from images using AI; free pre-flight set identifiability lookups | `cardIdentification().identifyCard()`, `identifyCardBySegment()`, `listIdentifiableSets()`, `checkSetIdentifiable()` |
 | **Card Detection** | Check if trading cards are present in an image | `detection().detectCard()` |
-| **CardMagic** | Turn a phone photo of cards into clean, listing-ready card images | `cardMagic().processCardImage()`, `processCardImageWithHttpInfo()` |
+| **CardMagic** | Turn a phone photo of one or more cards into clean, listing-ready card images | `cardMagic().processCardImage()`, `processCardImageWithHttpInfo()` |
 | **Catalog Search** | Fuzzy search across cards, sets, releases, parallels | `catalog().searchCatalog()`, `catalog().getCards()` |
 | **Random Catalog** | Pack-opening simulations with parallel odds | `catalog().getRandomCards()`, `catalog().getRandomSets()` |
 | **Collections** | Manage owned card collections with analytics | `collections().createCollection()`, `addCollectionCards()` |
 | **Collectors** | Manage collector profiles | `collectors().createCollector()`, `updateCollector()` |
 | **Lists** | Track wanted cards (wishlists) | `lists().createList()`, `addCardsToList()` |
 | **Binders** | Organize collection subsets | `collections().createBinder()` |
-| **Pricing** | Completed sales data for cards; free-text title search | `pricing().getCardPricing()`, `getBulkPricing()`, `searchPricingByTitle()` |
+| **Pricing** | Completed sales data for cards; candlestick price time series; free-text title search | `pricing().getCardPricing()`, `getBulkPricing()`, `getCardPricingTimeseries()`, `searchPricingByTitle()` |
 | **Marketplace** | Active marketplace listings for cards; free-text title search | `marketplace().getCardMarketplace()`, `searchMarketplaceByTitle()` |
 | **Population Reports** | Graded population counts by card, set, or release | `population().getCardPopulation()`, `getSetPopulation()`, `getReleasePopulation()` |
 | **Grading** | PSA, TAG, BGS, SGC grade information | `grading().getGradingCompanies()` |
 | **AI Search** | Natural language queries | `ai().processAIQuery()` |
 | **Autocomplete** | Search suggestions for all entities | `autocomplete().autocompleteCards()` |
-| **Field Catalog** | Browse flexible metadata fields (Artist, HP, Rarity, etc.) | `catalog().getFields()`, `getFieldById()` |
-| **Release Calendar** | Upcoming and recent card product releases | `releaseCalendar().getReleaseCalendar()` |
+| **Field Catalog** | Browse flexible metadata fields (Artist, HP, Rarity, etc.) with usage counts — powers cross-TCG metadata search | `catalog().getFields()`, `getFieldById()` |
+| **Release Calendar** | Upcoming and recent card product releases across segments and manufacturers | `releaseCalendar().getReleaseCalendar()` |
 
 ## Requirements
 
@@ -127,7 +130,7 @@ Each API category is reached through a typed accessor on the client (`client.cat
 
 ### Card Identification
 
-The identification endpoint uses AI to detect cards in images. It can identify multiple cards in a single image and returns a confidence level for each detection. Use `identifyCard()` for the default segment (baseball) or `identifyCardBySegment()` to target a specific sport/game.
+The identification endpoint uses AI to detect cards in images. It can identify multiple cards in a single image and returns a confidence level for each detection. Identification covers sports cards (Baseball, Football, Basketball, Hockey, Soccer, MMA) and trading card games (Pokémon, Magic: The Gathering, One Piece). `identifyCard()` detects each card's segment automatically, so a single image can mix segments. When you already know the sport or TCG, use `identifyCardBySegment()` to target it by UUID, name, or shortname (e.g. `"football"`, `"magic"`).
 
 ```java
 import ai.cardsight.CardSightAI;
@@ -181,7 +184,7 @@ if (Boolean.TRUE.equals(result.getSuccess())) {
     }
 }
 
-// Segment-specific identification (football, basketball, magic, etc.)
+// Segment-specific identification (football, basketball, soccer, magic, etc.)
 IdentifyCardResponse football = client.cardIdentification()
     .identifyCardBySegment("football", new File("card.jpg"));
 ```
@@ -192,7 +195,7 @@ IdentifyCardResponse football = client.cardIdentification()
 
 Each detection has a `confidence` level and a `card` object. The `card` fields are populated based on the match level:
 
-- **Exact match**: `card.getId()` is non-null — all fields populated, including `getNumber()` and optionally `getParallel()`
+- **Exact match**: `card.getId()` is non-null — all fields populated, including `getNumber()` and optionally `getParallelSuggestions()` (beta)
 - **Set-level match**: `card.getCardSetId()` is non-null but `getId()` is null — release/set info available but no specific card
 - **No match**: the card's fields are all null — a card was detected in the image but couldn't be identified
 
@@ -265,27 +268,32 @@ if (card.getSuggestions() != null) {
 }
 ```
 
-#### Parallel Variant Detection
+#### Parallel Variant Detection (beta)
 
-The identify endpoint can detect parallel variants (Refractors, Prizms, numbered parallels, etc.). When a parallel is detected, `card.getParallel()` returns a `ParallelSummary`:
+The identify endpoint reports parallel variants (Refractors, Prizms, numbered parallels, etc.) as a ranked list of candidates in `card.getParallelSuggestions()`. The list is best match first, and each `ParallelSuggestion` carries an optional `getConfidence()` tier (`HIGH`, `MEDIUM`, `LOW`). Ranking and confidence are independent — the engine's top pick is not always the entry with the highest confidence — and a null confidence means "not assessed", not Low. When exactly one parallel was identified you get a single High-confidence entry; when several remain possible you get all of them. Base cards with no parallel evidence return no suggestions. Parallel identification is currently in beta and has launched for **baseball**.
 
 ```java
+import ai.cardsight.generated.model.ParallelSuggestion;
+
 var card = detection.getCard();
-if (card.getParallel() != null) {
-    var parallel = card.getParallel();
-    System.out.println("Parallel: " + parallel.getName());          // e.g. "Gold Refractor"
-    System.out.println("Parallel ID: " + parallel.getId());
-
-    if (parallel.getDescription() != null) {
-        System.out.println("Description: " + parallel.getDescription());
-    }
-
-    // Numbered parallel (limited print run)
-    if (parallel.getNumberedTo() != null) {
-        System.out.println("NUMBERED: only " + parallel.getNumberedTo() + " exist!");
-    }
-} else {
+var suggestions = card.getParallelSuggestions();
+if (suggestions == null || suggestions.isEmpty()) {
     System.out.println("Base card");
+} else {
+    // The engine's top-ranked parallel
+    ParallelSuggestion best = suggestions.get(0);
+    System.out.println("Best match: " + best.getName() + " (" + best.getConfidence() + ")"); // e.g. "Gold Refractor (High)"
+
+    // Only act on confirmed parallels
+    if (best.getConfidence() == ParallelSuggestion.ConfidenceEnum.HIGH) {
+        System.out.println("Parallel ID: " + best.getId());
+        if (best.getNumberedTo() != null) {
+            System.out.println("NUMBERED: only " + best.getNumberedTo() + " exist!");
+        }
+    }
+
+    // Every candidate the engine considered, in its ranking
+    suggestions.forEach(s -> System.out.println("  • " + s.getName() + " - " + s.getConfidence()));
 }
 ```
 
@@ -393,7 +401,7 @@ results.getResults().forEach(r -> {
 
 ### Fields (Flexible Metadata System)
 
-Every trading card game has different metadata: Pokémon cards have HP and Rarity, Magic: The Gathering cards have Mana Cost and Artist, Yu-Gi-Oh! cards have Attribute and Level. Rather than hard-coding columns per game, CardSight exposes a flexible **Fields** system — any card, set, release, or segment can carry key/value metadata, and the catalog exposes it as a first-class browsable entity.
+Every trading card game has different metadata: Pokémon cards have HP and Rarity, while Magic: The Gathering cards have Mana Cost and Artist. Rather than hard-coding columns per game, CardSight exposes a flexible **Fields** system — any card, set, release, or segment can carry key/value metadata, and the catalog exposes it as a first-class browsable entity. One SDK surface works across every TCG, no per-game branching required.
 
 **Browse available fields:**
 
@@ -866,7 +874,7 @@ The SDK provides full coverage of the CardSight AI REST API, grouped into typed 
 | **Collections** | 23 | `collections().*` (collections, cards, binders, analytics, breakdown, set progress) |
 | **Collectors** | 5 | `collectors().*` |
 | **Lists** | 8 | `lists().*` |
-| **Pricing** | 3 | `pricing().getCardPricing()`, `getBulkPricing()`, `searchPricingByTitle()` |
+| **Pricing** | 4 | `pricing().getCardPricing()`, `getBulkPricing()`, `getCardPricingTimeseries()`, `searchPricingByTitle()` |
 | **Marketplace** | 2 | `marketplace().getCardMarketplace()`, `searchMarketplaceByTitle()` |
 | **Population** | 3 | `population().getCardPopulation()`, `getSetPopulation()`, `getReleasePopulation()` |
 | **Grades** | 3 | `grading().getGradingCompanies()`, `getGradingTypes()`, `getGrades()` |
