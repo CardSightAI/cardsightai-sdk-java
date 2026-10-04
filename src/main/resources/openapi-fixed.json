@@ -1745,11 +1745,23 @@
             "description": "Unique identifier for tracking this identification request"
           },
           "detections": {
-            "description": "Array of card detections from the image. Multiple cards may be detected in a single image. Each detection may include grading data if the card is inside a graded slab. Empty if no cards found.",
+            "description": "Array of card detections from the image. Multiple cards may be detected in a single image. Each detection may include grading data if the card is inside a graded slab; a slabbed card that could not be identified is still returned, with an empty `card` and its `grading`. Empty if no cards found.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/IdentificationDataInput"
             }
+          },
+          "detectedCount": {
+            "description": "Number of cards found in the image, whether or not they were identified. Never less than `identifiedCount`; `detectedCount - identifiedCount` is how many cards were found but not identified. Present on unsuccessful identifications too, so a caller can tell \"no card in the image\" (0) from \"a card was found but not identified\". Omitted when the count is unavailable.",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "identifiedCount": {
+            "description": "Number of entries in `detections` whose `card` was matched to the catalog (an exact card or a set-level match). Detections with an empty `card`, such as an unidentified card inside a graded slab, are not counted. 0 when no card was identified.",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
           },
           "processingTime": {
             "description": "Total processing time in milliseconds for AI analysis and catalog matching",
@@ -1986,6 +1998,10 @@
           "autoGrade": {
             "description": "Autograph grade detected on the slab label",
             "$ref": "#/components/schemas/SlabAutoGradeInput"
+          },
+          "certNumber": {
+            "description": "Certification number read from the slab label. Absent when it could not be read.",
+            "type": "string"
           }
         },
         "required": [
@@ -2663,6 +2679,15 @@
             "type": "string",
             "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
           },
+          "variations": {
+            "description": "UUIDs of the cards that are variations of this card (each carries this card's UUID in `variationOf`). Omitted when the card has no variations.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+              "description": "UUID"
+            }
+          },
           "parallels": {
             "description": "Simplified list of parallel variants for this card. Includes id, name, and numberedTo.",
             "type": "array",
@@ -2774,6 +2799,15 @@
             "description": "UUID of the base card if this is a variation. Only present for variation cards, omitted for base cards.",
             "type": "string",
             "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          },
+          "variations": {
+            "description": "UUIDs of the cards that are variations of this card (each carries this card's UUID in `variationOf`). Omitted when the card has no variations.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+              "description": "UUID"
+            }
           },
           "fields": {
             "description": "Key-value field properties inherited from segment, release, set, and card levels (e.g., HP, Rarity, Artist). Additive — duplicate keys across levels are preserved. Omitted when no fields apply anywhere in the lineage.",
@@ -3317,6 +3351,15 @@
             "description": "UUID of the base card if this is a variation. Only present for variation cards, omitted for base cards.",
             "type": "string",
             "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          },
+          "variations": {
+            "description": "UUIDs of the cards that are variations of this card (each carries this card's UUID in `variationOf`). Omitted when the card has no variations.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+              "description": "UUID"
+            }
           },
           "fields": {
             "description": "Key-value field properties inherited from segment, release, set, and card levels (e.g., HP, Rarity, Artist). Additive — duplicate keys across levels are preserved. Omitted when no fields apply anywhere in the lineage.",
@@ -3864,6 +3907,15 @@
             "description": "UUID of the base card if this is a variation. Only present for variation cards, omitted for base cards.",
             "type": "string",
             "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          },
+          "variations": {
+            "description": "UUIDs of the cards that are variations of this card (each carries this card's UUID in `variationOf`). Omitted when the card has no variations.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+              "description": "UUID"
+            }
           },
           "parallels": {
             "description": "Simplified list of parallel variants for this card. Includes id, name, and numberedTo.",
@@ -8085,11 +8137,23 @@
             "description": "Unique identifier for tracking this identification request"
           },
           "detections": {
-            "description": "Array of card detections from the image. Multiple cards may be detected in a single image. Each detection may include grading data if the card is inside a graded slab. Empty if no cards found.",
+            "description": "Array of card detections from the image. Multiple cards may be detected in a single image. Each detection may include grading data if the card is inside a graded slab; a slabbed card that could not be identified is still returned, with an empty `card` and its `grading`. Empty if no cards found.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/IdentificationData"
             }
+          },
+          "detectedCount": {
+            "description": "Number of cards found in the image, whether or not they were identified. Never less than `identifiedCount`; `detectedCount - identifiedCount` is how many cards were found but not identified. Present on unsuccessful identifications too, so a caller can tell \"no card in the image\" (0) from \"a card was found but not identified\". Omitted when the count is unavailable.",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "identifiedCount": {
+            "description": "Number of entries in `detections` whose `card` was matched to the catalog (an exact card or a set-level match). Detections with an empty `card`, such as an unidentified card inside a graded slab, are not counted. 0 when no card was identified.",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
           },
           "processingTime": {
             "description": "Total processing time in milliseconds for AI analysis and catalog matching",
@@ -8335,6 +8399,10 @@
           "autoGrade": {
             "description": "Autograph grade detected on the slab label",
             "$ref": "#/components/schemas/SlabAutoGrade"
+          },
+          "certNumber": {
+            "description": "Certification number read from the slab label. Absent when it could not be read.",
+            "type": "string"
           }
         },
         "required": [
@@ -9033,6 +9101,15 @@
             "type": "string",
             "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
           },
+          "variations": {
+            "description": "UUIDs of the cards that are variations of this card (each carries this card's UUID in `variationOf`). Omitted when the card has no variations.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+              "description": "UUID"
+            }
+          },
           "parallels": {
             "description": "Simplified list of parallel variants for this card. Includes id, name, and numberedTo.",
             "type": "array",
@@ -9146,6 +9223,15 @@
             "description": "UUID of the base card if this is a variation. Only present for variation cards, omitted for base cards.",
             "type": "string",
             "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          },
+          "variations": {
+            "description": "UUIDs of the cards that are variations of this card (each carries this card's UUID in `variationOf`). Omitted when the card has no variations.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+              "description": "UUID"
+            }
           },
           "fields": {
             "description": "Key-value field properties inherited from segment, release, set, and card levels (e.g., HP, Rarity, Artist). Additive — duplicate keys across levels are preserved. Omitted when no fields apply anywhere in the lineage.",
@@ -9700,6 +9786,15 @@
             "description": "UUID of the base card if this is a variation. Only present for variation cards, omitted for base cards.",
             "type": "string",
             "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          },
+          "variations": {
+            "description": "UUIDs of the cards that are variations of this card (each carries this card's UUID in `variationOf`). Omitted when the card has no variations.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+              "description": "UUID"
+            }
           },
           "fields": {
             "description": "Key-value field properties inherited from segment, release, set, and card levels (e.g., HP, Rarity, Artist). Additive — duplicate keys across levels are preserved. Omitted when no fields apply anywhere in the lineage.",
@@ -10265,6 +10360,15 @@
             "description": "UUID of the base card if this is a variation. Only present for variation cards, omitted for base cards.",
             "type": "string",
             "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          },
+          "variations": {
+            "description": "UUIDs of the cards that are variations of this card (each carries this card's UUID in `variationOf`). Omitted when the card has no variations.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+              "description": "UUID"
+            }
           },
           "parallels": {
             "description": "Simplified list of parallel variants for this card. Includes id, name, and numberedTo.",
@@ -13333,6 +13437,263 @@
             }
           },
           "500": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/cardmagic/process": {
+      "post": {
+        "operationId": "processCardImage",
+        "summary": "Create listing-ready card images from a photo",
+        "tags": [
+          "CardMagic"
+        ],
+        "description": "Upload a phone photo of one or more trading cards and get each card back as a clean, listing-ready image. Best results come from raw cards; cards in toploaders or grading-company slabs may crop poorly. mode=process (default) returns each card straightened and squared up at standard trading-card proportions, as if it had been scanned; mode=crop returns each card as it appears in the photo, trimmed to the card. Padding, fill, auto-levels and the returned image size (longEdge) are adjustable. One card returns the image directly (image/jpeg or image/png per outputFormat) with its pixel size in the X-CardMagic-Width and X-CardMagic-Height headers. Two or more cards return application/zip containing card_0.<ext>, card_1.<ext>, ... in reading order (top to bottom, then left to right). corners=true adds close-ups of each card's four corners and a sheet combining them, and the response is then always application/zip, even for one card: card_N.<ext> is followed by card_N_top-left.<ext>, card_N_top-right.<ext>, card_N_bottom-right.<ext>, card_N_bottom-left.<ext> and card_N_corners.<ext>. If no card is found the response is 422 NO_CARD_FOUND. Accepts multipart/form-data or a direct binary body (image/jpeg, image/png, image/webp, image/heic). Maximum upload 20MB and 8192px per side. Send the original photo (including its orientation flag), not a downscaled or rotated copy.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/FileUploadInput"
+              }
+            },
+            "image/jpeg": {
+              "schema": {
+                "$ref": "#/components/schemas/FileUploadInput"
+              }
+            },
+            "image/png": {
+              "schema": {
+                "$ref": "#/components/schemas/FileUploadInput"
+              }
+            },
+            "image/webp": {
+              "schema": {
+                "$ref": "#/components/schemas/FileUploadInput"
+              }
+            },
+            "image/heic": {
+              "schema": {
+                "$ref": "#/components/schemas/FileUploadInput"
+              }
+            },
+            "image/heif": {
+              "schema": {
+                "$ref": "#/components/schemas/FileUploadInput"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "default": "process",
+              "type": "string",
+              "enum": [
+                "process",
+                "crop"
+              ]
+            },
+            "in": "query",
+            "name": "mode",
+            "required": false,
+            "description": "process (default): each card straightened and squared up at standard trading-card proportions, as if scanned. crop: each card as it appears in the photo, trimmed to the card."
+          },
+          {
+            "schema": {
+              "default": 5,
+              "type": "number",
+              "minimum": 0,
+              "maximum": 50
+            },
+            "in": "query",
+            "name": "paddingPercent",
+            "required": false,
+            "description": "Margin around the card as a percent of the card size on each side, 0 to 50. Default 5."
+          },
+          {
+            "schema": {
+              "default": "background",
+              "type": "string",
+              "pattern": "^(background|#[0-9a-fA-F]{6})$"
+            },
+            "in": "query",
+            "name": "paddingFill",
+            "required": false,
+            "description": "What fills the margin: \"background\" (the real surroundings, default) or a solid #RRGGBB color."
+          },
+          {
+            "schema": {
+              "default": "true",
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            },
+            "in": "query",
+            "name": "autoLevels",
+            "required": false,
+            "description": "Restore contrast and remove color cast (default true). Set false when the photo's own color is what matters."
+          },
+          {
+            "schema": {
+              "default": "jpeg",
+              "type": "string",
+              "enum": [
+                "jpeg",
+                "png"
+              ]
+            },
+            "in": "query",
+            "name": "outputFormat",
+            "required": false,
+            "description": "Encoding of the returned card image(s). Default jpeg."
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 32,
+              "maximum": 2100
+            },
+            "in": "query",
+            "name": "longEdge",
+            "required": false,
+            "description": "Size of every returned image as the length of its long side in pixels, padding included, 32 to 2100. Omit it for the photo's native size."
+          },
+          {
+            "schema": {
+              "default": "false",
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            },
+            "in": "query",
+            "name": "corners",
+            "required": false,
+            "description": "Add close-ups of each card's four corners for judging condition (default false). Each close-up is 600x600 and shows 14 mm of the card from the corner plus 2.5 mm beyond it, with a light 1 mm grid (heavier every 5 mm; the grid assumes a standard 2.5 x 3.5 in card), in the photo's original color. A 1210x1210 sheet shows all four as they sit on the card. The response is then always application/zip, even for one card."
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One card: the processed image as image/jpeg or image/png (per outputFormat), with its pixel size in the X-CardMagic-Width and X-CardMagic-Height headers. Two or more cards: application/zip containing card_0.<ext>, card_1.<ext>, ... in reading order. With corners=true the response is always application/zip, even for one card, and each card_N.<ext> is followed by card_N_top-left.<ext>, card_N_top-right.<ext>, card_N_bottom-right.<ext>, card_N_bottom-left.<ext> and card_N_corners.<ext> (all four on one sheet).",
+            "headers": {
+              "X-CardMagic-Count": {
+                "schema": {
+                  "type": "integer"
+                },
+                "description": "Number of cards in the photo"
+              },
+              "X-CardMagic-Width": {
+                "schema": {
+                  "type": "integer"
+                },
+                "description": "Single image only. Image width in pixels, padding included"
+              },
+              "X-CardMagic-Height": {
+                "schema": {
+                  "type": "integer"
+                },
+                "description": "Single image only. Image height in pixels, padding included"
+              }
+            },
+            "content": {
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "application/zip": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
             "description": "Default Response",
             "content": {
               "application/json": {
@@ -23716,6 +24077,10 @@
     {
       "name": "Card Identification",
       "description": "AI-powered card identification from images"
+    },
+    {
+      "name": "CardMagic",
+      "description": "Turn a phone photo of a card into a framed, cropped, listing-ready image"
     },
     {
       "name": "Catalog",

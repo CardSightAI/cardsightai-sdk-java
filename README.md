@@ -44,6 +44,7 @@ Building a trading card app means solving two hard problems before you can ship 
 |---------|-------------|-----------------|
 | **Card Identification** | Identify multiple cards from images using AI; free pre-flight set identifiability lookups | `cardIdentification().identifyCard()`, `identifyCardBySegment()`, `listIdentifiableSets()`, `checkSetIdentifiable()` |
 | **Card Detection** | Check if trading cards are present in an image | `detection().detectCard()` |
+| **CardMagic** | Turn a phone photo of cards into clean, listing-ready card images | `cardMagic().processCardImage()`, `processCardImageWithHttpInfo()` |
 | **Catalog Search** | Fuzzy search across cards, sets, releases, parallels | `catalog().searchCatalog()`, `catalog().getCards()` |
 | **Random Catalog** | Pack-opening simulations with parallel odds | `catalog().getRandomCards()`, `catalog().getRandomSets()` |
 | **Collections** | Manage owned card collections with analytics | `collections().createCollection()`, `addCollectionCards()` |
@@ -73,14 +74,14 @@ Building a trading card app means solving two hard problems before you can ship 
 <dependency>
     <groupId>ai.cardsight</groupId>
     <artifactId>cardsightai-sdk-java</artifactId>
-    <version>2.0.0</version>
+    <version>3.1.0</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```gradle
-implementation 'ai.cardsight:cardsightai-sdk-java:2.0.0'
+implementation 'ai.cardsight:cardsightai-sdk-java:3.1.0'
 ```
 
 ## Getting Started
@@ -302,8 +303,11 @@ if (grading != null) {
     //   grading.getGrade()     -> SlabGrade     (grade value + condition)
     //   grading.getQualifier() -> SlabQualifier (defect qualifier, e.g. OC, MC, PD, ST)
     //   grading.getAutoGrade() -> SlabAutoGrade (autograph grade)
+    //   grading.getCertNumber() -> String       (certification number read from the label)
 }
 ```
+
+A slabbed card that could not be identified is still returned as a detection, with an empty `card` and its `grading`. Check `result.getIdentifiedCount()` (detections matched to the catalog) against `result.getDetectedCount()` (all cards found) before assuming every detection with `grading` has a matched card.
 
 ### Card Detection (Presence Check)
 
@@ -323,6 +327,45 @@ if (result.getMessages() != null) {
         System.out.println("[" + m.getType() + "] " + m.getMessage()));
 }
 ```
+
+### CardMagic (Listing-Ready Card Images)
+
+CardMagic turns a phone photo of one or more cards into clean, listing-ready card images. The response is binary (not JSON): one card comes back as `image/jpeg` or `image/png`, two or more cards (or `corners` set to `"true"`) come back as an `application/zip` of `card_N.<ext>` files. Use `processCardImageWithHttpInfo()` to read the `Content-Type` and the `X-CardMagic-Count` / `X-CardMagic-Width` / `X-CardMagic-Height` response headers:
+
+```java
+import ai.cardsight.generated.client.ApiException;
+import ai.cardsight.generated.client.ApiResponse;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+
+try {
+    // image, mode, paddingPercent, paddingFill, autoLevels, outputFormat, longEdge, corners
+    // (everything after `image` is optional - pass null for the server default)
+    ApiResponse<File> response = client.cardMagic()
+        .processCardImageWithHttpInfo(new File("photo.jpg"), "process", null, null, null, "jpeg", 1200, null);
+
+    String contentType = response.getHeaders().get("Content-Type").get(0);        // image/jpeg | image/png | application/zip
+    String cardCount = response.getHeaders().get("X-CardMagic-Count").get(0);     // cards found in the photo
+    String ext = contentType.startsWith("application/zip") ? "zip"
+        : contentType.startsWith("image/png") ? "png" : "jpg";
+
+    // getData() is a temp file with no extension - copy it where you want it
+    Files.copy(response.getData().toPath(), Path.of("card." + ext), StandardCopyOption.REPLACE_EXISTING);
+    response.getData().delete();
+    System.out.println(cardCount + " card(s) saved to card." + ext);
+} catch (ApiException e) {
+    // 422 with {"error":"No card found","code":"NO_CARD_FOUND"} when the photo contains no card
+    if (e.getCode() == 422 && e.getResponseBody() != null && e.getResponseBody().contains("NO_CARD_FOUND")) {
+        System.out.println("No card found in the photo");
+    } else {
+        throw e;
+    }
+}
+```
+
+The image is uploaded as `multipart/form-data` (max 20MB, 8192px per side). Send the original photo rather than a downscaled or rotated copy.
 
 ### Catalog Search
 
@@ -817,6 +860,7 @@ The SDK provides full coverage of the CardSight AI REST API, grouped into typed 
 | **Health** | 2 | `health().getHealth()`, `getHealthAuthenticated()` |
 | **Identification** | 4 | `cardIdentification().identifyCard()`, `identifyCardBySegment()`, `listIdentifiableSets()`, `checkSetIdentifiable()` |
 | **Detection** | 1 | `detection().detectCard()` |
+| **CardMagic** | 1 | `cardMagic().processCardImage()`, `processCardImageWithHttpInfo()` |
 | **Catalog** | 21 | `catalog().searchCatalog()`, `getCards()`, `getSets()`, `getReleases()`, `getFields()`, `getParallels()`, `getRandomCards()`, `getStatistics()`, … |
 | **Release Calendar** | 1 | `releaseCalendar().getReleaseCalendar()` |
 | **Collections** | 23 | `collections().*` (collections, cards, binders, analytics, breakdown, set progress) |

@@ -282,6 +282,15 @@ public class CardSightAI {
   }
 
   /**
+   * Gets the CardMagic API for turning a photo of cards into clean, listing-ready card images.
+   *
+   * @return the CardMagic API instance
+   */
+  public CardMagicApi cardMagic() {
+    return new CardMagicApi(apiClient);
+  }
+
+  /**
    * Gets the Marketplace API for marketplace listings and sales data.
    *
    * @return the Marketplace API instance

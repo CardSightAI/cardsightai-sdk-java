@@ -5,6 +5,67 @@ All notable changes to the CardSight AI Java SDK will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2026-10-04
+
+Regenerated from the latest CardSight AI OpenAPI specification (now 80 paths / 364 schemas, up from 79 / 364). One new API tag, **CardMagic**, is exposed through a new `cardMagic()` accessor on `CardSightAI`. Everything else is additive: no endpoints, parameters, schemas, properties, or `required` lists were removed or changed.
+
+### Added
+
+- **New API category: CardMagic** — `client.cardMagic()` returns the generated `CardMagicApi`. It turns a phone photo of one or more cards into clean, listing-ready card images.
+- **New endpoint:** `POST /v1/cardmagic/process` — `CardMagicApi.processCardImage(File image, String mode, BigDecimal paddingPercent, String paddingFill, String autoLevels, String outputFormat, Integer longEdge, String corners)` returns the processed image as a `File`; `processCardImageWithHttpInfo(...)` takes the same arguments and returns an `ApiResponse<File>` so you can read the response headers. Only `image` is required; pass `null` for any option to use the server default.
+  - Options: `mode` (`process` default | `crop`), `paddingPercent` (0–50, default 5), `paddingFill` (`background` or `#RRGGBB`), `autoLevels` (`"true"` | `"false"`, default `"true"`), `outputFormat` (`jpeg` | `png`), `longEdge` (32–2100), `corners` (`"true"` | `"false"`, adds corner close-ups for judging condition).
+  - The image is sent as `multipart/form-data` (the generated client does not offer the raw `image/jpeg`, `image/png`, `image/webp`, `image/heic`, or `image/heif` body variants). Maximum upload is 20MB and 8192px per side; send the original photo, not a downscaled or rotated copy.
+  - The response is **binary**, not JSON. One card returns `image/jpeg` or `image/png` (per `outputFormat`); two or more cards, or `corners=true`, return `application/zip` containing `card_0.<ext>`, `card_1.<ext>`, ... in reading order. The returned `File` is a temp file with no extension (its `Content-Type` tells you what it is), and deleting it is up to you.
+  - Response headers, available from `processCardImageWithHttpInfo(...).getHeaders()` (lookups are case-insensitive): `X-CardMagic-Count` (cards in the photo) and, for a single image only, `X-CardMagic-Width` / `X-CardMagic-Height` (pixels, padding included).
+  - When no card is in the photo the API returns `422` with `{"error":"No card found","code":"NO_CARD_FOUND"}`, which surfaces as an `ApiException` with `getCode() == 422` and the JSON in `getResponseBody()`.
+
+  ```java
+  import ai.cardsight.generated.client.ApiException;
+  import ai.cardsight.generated.client.ApiResponse;
+  import java.io.File;
+  import java.nio.file.Files;
+  import java.nio.file.Path;
+  import java.nio.file.StandardCopyOption;
+  import java.util.List;
+  import java.util.Map;
+
+  try {
+      // image, mode, paddingPercent, paddingFill, autoLevels, outputFormat, longEdge, corners
+      ApiResponse<File> response = client.cardMagic()
+          .processCardImageWithHttpInfo(new File("photo.jpg"), "process", null, null, null, "jpeg", 1200, null);
+
+      Map<String, List<String>> headers = response.getHeaders();   // names are case-insensitive
+      String contentType = headers.get("Content-Type").get(0);     // image/jpeg | image/png | application/zip
+      int count = Integer.parseInt(headers.get("X-CardMagic-Count").get(0));
+
+      // getData() is a temp file with no extension: pick one from Content-Type, then keep or copy it.
+      String ext = contentType.startsWith("application/zip") ? "zip"
+          : contentType.startsWith("image/png") ? "png" : "jpg";
+      Files.copy(response.getData().toPath(), Path.of("card." + ext), StandardCopyOption.REPLACE_EXISTING);
+      response.getData().delete();
+
+      if (count == 1 && headers.containsKey("X-CardMagic-Width")) {   // Width/Height: single image only
+          System.out.println(headers.get("X-CardMagic-Width").get(0) + "x" + headers.get("X-CardMagic-Height").get(0));
+      }
+  } catch (ApiException e) {
+      String body = e.getResponseBody();
+      if (e.getCode() == 422 && body != null && body.contains("NO_CARD_FOUND")) {
+          System.out.println("No card found in the photo");   // not an SDK failure: ask for a clearer photo
+      } else {
+          throw e;
+      }
+  }
+  ```
+
+- **`IdentifyCardResponse.getDetectedCount()` and `getIdentifiedCount()`** (`Integer`, also on `IdentifyCardResponseInput`). `detectedCount` is the number of cards found in the image whether or not they were identified, and is present on unsuccessful identifications too (so `0` means "no card in the image" and a positive value with no match means "a card was found but not identified"); it is omitted when unavailable. `identifiedCount` is the number of `detections` whose `card` matched the catalog (an exact card or a set-level match).
+- **`SlabGradingDetail.getCertNumber()`** (`String`, also on `SlabGradingDetailInput`) — the certification number read from the slab label; absent when it could not be read.
+- **`getVariations()`** (`List<String>` of card UUIDs, each carrying this card's UUID in `variationOf`) on `CardSummary`, `CardWithOptionalParallel`, `DetailedCard`, and `DetailedCardResponse` (and their `*Input` counterparts); omitted when the card has no variations.
+
+### Changed
+
+- **Slabbed-card identification behaviour (no schema change).** A card inside a graded slab that could not be identified is now returned as a detection with an empty `card` plus its `grading`. Code that assumed every detection with `getGrading()` has a matched card must check for an exact or set-level match before reading `getCard()` — for example by comparing `getIdentifiedCount()` with `getDetections().size()`.
+- The `IdentifyCardResponse.detections` documentation now describes the slabbed-card case above.
+
 ## [3.0.0] - 2026-09-11
 
 Regenerated from the latest CardSight AI OpenAPI specification (now 79 paths / 364 schemas, up from 78 / 346). No new API tags — every endpoint is reachable through an existing typed accessor on `CardSightAI`.
